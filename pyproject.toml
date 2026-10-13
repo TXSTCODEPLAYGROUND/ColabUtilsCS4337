@@ -1,0 +1,72 @@
+[build-system]
+requires = ["hatchling>=1.24", "hatch-vcs>=0.4"]
+build-backend = "hatchling.build"
+
+[project]
+name = "colabutilscs4337"
+dynamic = ["version"]
+description = "Google Colab utilities for CS4337: Drive run folders, model inspection, and CNN visualization (Grad-CAM, activations)."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [{ name = "CS4337 Course Staff" }]
+keywords = ["colab", "pytorch", "fastai", "computer-vision", "grad-cam", "education"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Framework :: Jupyter",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+# Colab already provides torch, torchvision, fastai, numpy, matplotlib, pillow, ipywidgets.
+# Declaring them here would let pip replace Colab's builds, so this list stays empty.
+dependencies = []
+
+[project.optional-dependencies]
+tools = ["torchinfo>=1.8", "netron>=7.0"]
+cam = ["grad-cam>=1.5"]
+fastai = ["fastai>=2.7"]
+all = ["colabutilscs4337[tools,cam]"]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/TXSTCODEPLAYGROUND/ColabUtilsCS4337"
+Documentation = "https://txstcodeplayground.github.io/ColabUtilsCS4337/"
+Repository = "https://github.com/TXSTCODEPLAYGROUND/ColabUtilsCS4337"
+Issues = "https://github.com/TXSTCODEPLAYGROUND/ColabUtilsCS4337/issues"
+Changelog = "https://github.com/TXSTCODEPLAYGROUND/ColabUtilsCS4337/blob/main/CHANGELOG.md"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "0.1.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/colabutilscs4337/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/colabutilscs4337"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE", "CHANGELOG.md", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
+markers = [
+    "gpu: requires a CUDA GPU (run manually in Colab)",
+    "colab: requires a real Google Colab runtime",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["src/colabutilscs4337/_version.py", "notebooks", ".venv-docs", "docs/_build"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]

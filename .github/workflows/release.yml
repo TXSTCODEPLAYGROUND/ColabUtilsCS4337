@@ -1,0 +1,71 @@
+name: Release
+
+# Push a tag like v0.1.0. Publishes to TestPyPI, then waits for approval on the
+# "pypi" environment (run notebooks/smoke_test.ipynb in Colab first), then PyPI.
+#
+# One-time setup:
+#   1. On pypi.org and test.pypi.org, add a Trusted Publisher for this repo,
+#      workflow "release.yml", environments "pypi" and "testpypi".
+#   2. In GitHub Settings > Environments, create "testpypi" and "pypi";
+#      add yourself as a required reviewer on "pypi".
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check --strict dist/*
+      - name: Version matches tag
+        run: |
+          ls dist
+          test -f "dist/colabutilscs4337-${GITHUB_REF_NAME#v}-py3-none-any.whl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/colabutilscs4337
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    needs: publish-testpypi
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/colabutilscs4337
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

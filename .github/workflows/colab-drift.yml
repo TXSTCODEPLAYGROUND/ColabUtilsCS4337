@@ -1,0 +1,50 @@
+name: Colab runtime drift
+
+# Weekly: re-test against the latest Colab image and open a PR when Google's
+# published runtime (googlecolab/backend-info) has changed.
+on:
+  schedule:
+    - cron: "0 13 * * 1" # Mondays 13:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  tests:
+    uses: ./.github/workflows/ci.yml
+
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - id: check
+        name: Has the Colab runtime changed?
+        run: |
+          if python scripts/sync_colab_runtime.py --check; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.check.outputs.changed == 'true'
+        name: Update snapshot
+        run: |
+          python scripts/sync_colab_runtime.py
+          git diff --stat
+      - if: steps.check.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: colab-runtime-update
+          commit-message: "Sync Colab runtime snapshot"
+          title: "Colab runtime update"
+          body: |
+            Google's Colab runtime ([googlecolab/backend-info](https://github.com/googlecolab/backend-info)) changed.
+
+            This PR updates `constraints/` and `src/colabutilscs4337/_tested.json`.
+            CI on this PR re-runs the tests with the new versions, including inside
+            the latest Colab image. Review the version diff, then merge and release.
+          labels: colab-runtime
