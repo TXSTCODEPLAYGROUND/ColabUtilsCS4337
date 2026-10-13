@@ -3,7 +3,7 @@
 Each release lists the Google Colab runtime it was tested against
 (from [googlecolab/backend-info](https://github.com/googlecolab/backend-info)).
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-10-12)
 
 Tested against: Colab GPU runtime, Python 3.13.15, torch 2.11.0+cu130, torchvision 0.26.0+cu130, fastai 2.8.12.
 
