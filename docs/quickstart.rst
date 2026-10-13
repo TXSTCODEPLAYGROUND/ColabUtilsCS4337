@@ -11,7 +11,6 @@ A typical assignment notebook, top to bottom. Every step is one line.
    %pip install -q --upgrade colabutilscs4337
    import colabutilscs4337 as cu
 
-   cu.install("all")                      # optional tools, never touches torch/fastai
    cu.env.check()                         # versions vs. the tested Colab runtime
    cu.env.load_secrets("WANDB_API_KEY")   # only if you use W&B (see :doc:`guide/secrets`)
 

@@ -10,23 +10,35 @@ Put this in the first cell of every notebook:
 
    %pip install -q --upgrade colabutilscs4337
    import colabutilscs4337 as cu
-   cu.install("all")
    cu.env.check()
 
-The first line can never break your runtime: the package has **no required
-dependencies**. PyTorch, torchvision, fastai, NumPy, and Matplotlib are already
-installed in Colab, built for its GPU, and this package uses those copies.
+The first line cannot break your runtime. PyTorch, torchvision, fastai, NumPy, and
+Matplotlib are already installed in Colab, built for its GPU; this package uses
+those copies and never lists them as dependencies, so pip cannot replace them.
 
-``cu.install("all")`` adds the optional tools. Each one comes from an *extra*:
+It does install the tools Colab lacks:
+
+==================  =============================================================
+Package             Used by
+==================  =============================================================
+``torchinfo``       :func:`~colabutilscs4337.tools.summary`
+``netron``          :func:`~colabutilscs4337.tools.netron`
+``onnx``,           :func:`~colabutilscs4337.tools.netron` and
+``onnxscript``      :func:`~colabutilscs4337.tools.export_for_netron` (ONNX export)
+==================  =============================================================
+
+CI installs the package inside Google's Colab runtime image and fails if any
+preinstalled package changes. Their versions are capped below the next release, so
+a future ``onnx`` cannot pull in a newer NumPy or protobuf.
+
+Optional extras, added with ``cu.install(...)``:
 
 ============  ===================================  ==================================
 Extra         Installs                             Needed for
 ============  ===================================  ==================================
-``tools``     ``torchinfo``, ``netron``            :func:`~colabutilscs4337.tools.summary`,
-                                                   :func:`~colabutilscs4337.tools.netron`
 ``cam``       ``grad-cam``                         Grad-CAM++, Score-CAM, and other
                                                    :func:`~colabutilscs4337.viz.gradcam` methods
-``all``       ``tools`` + ``cam``
+``all``       ``cam`` (and the tools above)
 ``fastai``    ``fastai``                           only if your runtime lacks fastai
 ============  ===================================  ==================================
 
@@ -50,7 +62,7 @@ prevents that:
 
    cu.install("cam", dry=True)        # preview: "[dry run] Added: grad-cam 1.5.7, ttach 0.0.3"
    cu.install("cam")                  # install
-   cu.install("onnx")                 # any other package works too
+   cu.install("timm")                 # any other package works too
    cu.install("numpy==2.3.0")         # refused: would change Colab's numpy
    cu.install("numpy==2.3.0", allow_changes=True)   # only if you really mean it
 
@@ -58,7 +70,7 @@ Plain pip works too, with the same protection, by pinning what is installed:
 
 .. code-block:: bash
 
-   pip list --format=freeze | grep -viE '^(colabutilscs4337|torchinfo|netron|grad-cam|ttach)==' > /tmp/c.txt
+   pip list --format=freeze | grep -viE '^(colabutilscs4337|torchinfo|netron|onnx|onnxscript|onnx-ir|grad-cam|ttach)==' > /tmp/c.txt
    pip install -c /tmp/c.txt --upgrade "colabutilscs4337[all]"
 
 Upgrading

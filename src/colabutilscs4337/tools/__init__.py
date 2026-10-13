@@ -5,7 +5,11 @@ from ._summary import summary, unwrap_model
 
 
 def install(*extras: str, **kwargs):
-    """Install the optional tools (torchinfo, netron) without touching Colab's packages."""
+    """Reinstall the tools (torchinfo, netron, onnx, onnxscript) if they are missing.
+
+    They come with ``pip install colabutilscs4337``; this is only needed if you
+    uninstalled them or installed the package with ``--no-deps``.
+    """
     from .._install import install as _install
 
     return _install(*(extras or ("tools",)), **kwargs)

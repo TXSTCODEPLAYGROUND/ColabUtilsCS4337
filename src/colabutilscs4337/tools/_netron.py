@@ -19,13 +19,13 @@ def export_for_netron(
     model: Any,
     path: str | os.PathLike | None = None,
     input_size: Sequence[int] = DEFAULT_INPUT_SIZE,
-    format: str = "torchscript",
+    format: str = "onnx",
 ) -> Path:
     """Save a model in a format Netron can draw as a graph.
 
-    ``format="torchscript"`` (default) needs only torch. ``format="export"`` writes a
-    ``torch.export`` ``.pt2`` archive. ``format="onnx"`` gives the cleanest graph but
-    needs the ``onnx`` package, which Colab does not preinstall.
+    ``format="onnx"`` (default) gives the cleanest graph, with the input and output
+    named ``input`` and ``output``. ``format="torchscript"`` writes a traced ``.pt``
+    file and ``format="export"`` a ``torch.export`` ``.pt2`` archive.
     """
     torch = require("torch")
     if format not in _SUFFIXES:
@@ -44,9 +44,19 @@ def export_for_netron(
         with torch.no_grad(), warnings.catch_warnings():
             # torch>=2.10 marks torch.jit as deprecated; it still produces Netron-readable files.
             warnings.simplefilter("ignore", DeprecationWarning)
+            # torch.onnx's exporter trips torch's own pytree deprecation (not the user's code).
+            warnings.filterwarnings("ignore", message=".*treespec.*", category=FutureWarning)
             if format == "onnx":
                 require("onnx", purpose="ONNX export")
-                torch.onnx.export(module, (example,), str(path))
+                require("onnxscript", purpose="ONNX export")
+                torch.onnx.export(
+                    module,
+                    (example,),
+                    str(path),
+                    input_names=["input"],
+                    output_names=["output"],
+                    verbose=False,
+                )
             elif format == "export":
                 torch.export.save(torch.export.export(module, (example,)), str(path))
             else:
@@ -60,14 +70,22 @@ def netron(
     model_or_path: Any,
     *,
     input_size: Sequence[int] = DEFAULT_INPUT_SIZE,
-    format: str = "torchscript",
+    format: str = "onnx",
     port: int | None = None,
     height: int = 700,
 ) -> tuple[str, int]:
     """Open Netron for a model file or an in-memory model (``nn.Module`` / fastai Learner).
 
     In Colab the viewer is shown inside the cell output through Colab's port proxy.
-    Returns Netron's ``(host, port)`` address; pass it to :func:`stop_netron` to stop.
+    A free port is chosen unless ``port`` is given, and running it again for the same
+    model replaces the previous viewer. Returns Netron's ``(host, port)`` address;
+    pass it to :func:`stop_netron` to stop.
+
+    Examples
+    --------
+    >>> cu.tools.netron(model, input_size=(1, 1, 28, 28))   # MNIST model
+    >>> cu.tools.netron(learn)                              # fastai Learner, 224x224 RGB
+    >>> cu.tools.netron("model.onnx", height=600)           # a file you saved
     """
     netron_mod = require("netron", extra="tools", purpose="the Netron viewer")
     if isinstance(model_or_path, (str, os.PathLike)):

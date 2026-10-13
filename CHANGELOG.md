@@ -7,6 +7,11 @@ Each release lists the Google Colab runtime it was tested against
 
 - `viz.show_images()`, `show_by_class()`, `show_cam()`, `show_feature_maps()`: the plot no
   longer appears twice when the call is the last line of a notebook cell.
+- `torchinfo`, `netron`, `onnx`, and `onnxscript` are now installed with the package
+  (versions capped; verified to change no preinstalled Colab package). `cu.install("tools")`
+  is no longer needed.
+- `tools.netron()` / `export_for_netron()` export to ONNX by default, with the graph's
+  input and output named `input` and `output`, and hide torch's internal `treespec` warning.
 
 ## 0.1.0 (2026-10-12)
 

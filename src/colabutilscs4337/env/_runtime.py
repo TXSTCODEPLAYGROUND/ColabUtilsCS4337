@@ -21,7 +21,7 @@ TRACKED = (
     "timm",
     "opencv-python",
 )
-EXTRAS = ("torchinfo", "netron", "grad-cam")
+EXTRAS = ("torchinfo", "netron", "onnx", "onnxscript", "grad-cam")
 
 
 def is_colab() -> bool:

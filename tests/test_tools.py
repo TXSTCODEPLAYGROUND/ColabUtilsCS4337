@@ -41,8 +41,22 @@ def test_summary_counts_params():
     assert stats.total_params == sum(p.numel() for p in tiny_cnn().parameters())
 
 
+def test_export_for_netron_onnx_default(tmp_path, recwarn):
+    onnx = pytest.importorskip("onnx")
+    pytest.importorskip("onnxscript")
+    model = tiny_cnn().train()
+    path = tools.export_for_netron(model, tmp_path / "m.onnx", input_size=(1, 3, 16, 16))
+    graph = onnx.load(str(path)).graph
+    assert [i.name for i in graph.input] == ["input"]
+    assert [o.name for o in graph.output] == ["output"]
+    assert model.training
+    assert not [w for w in recwarn if "treespec" in str(w.message)]
+
+
 def test_export_for_netron_torchscript(tmp_path):
-    path = tools.export_for_netron(tiny_cnn(), tmp_path / "m.pt", input_size=(1, 3, 16, 16))
+    path = tools.export_for_netron(
+        tiny_cnn(), tmp_path / "m.pt", input_size=(1, 3, 16, 16), format="torchscript"
+    )
     assert path.is_file()
     loaded = torch.jit.load(str(path))
     assert loaded(torch.zeros(1, 3, 16, 16)).shape == (1, 2)

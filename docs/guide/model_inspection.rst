@@ -10,21 +10,33 @@ Layer-by-layer summary
    cu.tools.summary(model, input_size=(1, 1, 28, 28))   # MNIST-sized input
    cu.tools.summary(learn)                              # a fastai Learner works too
 
-Shows every layer's output shape and parameter count (uses ``torchinfo``; run
-``cu.install("tools")`` once).
+Shows every layer's output shape and parameter count (uses ``torchinfo``, installed
+with the package).
 
 Interactive graph with Netron
 -----------------------------
 
 .. code-block:: python
 
-   cu.tools.netron(model)                               # drawn inside the cell output
-   cu.tools.netron(model, input_size=(1, 1, 28, 28))
-   cu.tools.netron("/content/drive/MyDrive/model.onnx") # any file Netron can open
+   cu.tools.netron(model, input_size=(1, 1, 28, 28))    # drawn inside the cell output
+   cu.tools.netron(learn)                               # fastai Learner, (1, 3, 224, 224)
+   cu.tools.netron("/content/drive/MyDrive/model.onnx", height=600)  # a saved file
    cu.tools.stop_netron()
 
-In-memory models are exported first (TorchScript by default; ``format="export"``
-writes a ``torch.export`` file; ``format="onnx"`` needs ``cu.install("onnx")``).
+This one call replaces the usual Colab recipe of ``model.eval()``, a dummy input on
+the right device, ``torch.onnx.export``, ``netron.start`` on a free port, and
+``google.colab.output.serve_kernel_port_as_iframe``. Running it again for the same
+model replaces the old viewer, so there are no "port in use" errors.
+
+In-memory models are exported to ONNX by default, with the graph's input and output
+named ``input`` and ``output``. ``format="torchscript"`` and ``format="export"``
+(``torch.export``) are also available. To keep the exported file, for example in
+your run folder:
+
+.. code-block:: python
+
+   path = cu.tools.export_for_netron(model, run / "model.onnx", input_size=(1, 1, 28, 28))
+   cu.tools.netron(path)
 
 Loading saved models
 --------------------

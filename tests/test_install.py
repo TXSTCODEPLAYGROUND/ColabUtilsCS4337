@@ -13,8 +13,9 @@ from colabutilscs4337._install import (
 
 
 def test_resolve_targets_expands_extras():
-    assert resolve_targets(["tools"]) == ["torchinfo>=1.8", "netron>=7.0"]
-    assert resolve_targets(["all", "tools"]) == ["torchinfo>=1.8", "netron>=7.0", "grad-cam>=1.5"]
+    tools = resolve_targets(["tools"])
+    assert [requirement_name(r) for r in tools] == ["torchinfo", "netron", "onnx", "onnxscript"]
+    assert resolve_targets(["all", "tools"]) == [*tools, "grad-cam>=1.5"]
     assert resolve_targets(["rich==13.0"]) == ["rich==13.0"]
 
 

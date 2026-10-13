@@ -24,11 +24,19 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Image Recognition",
 ]
 # Colab already provides torch, torchvision, fastai, numpy, matplotlib, pillow, ipywidgets.
-# Declaring them here would let pip replace Colab's builds, so this list stays empty.
-dependencies = []
+# Declaring them here would let pip replace Colab's builds, so they are never listed.
+# Everything below is absent from Colab and resolves against constraints/colab-gpu.txt
+# without changing a preinstalled package. Upper bounds keep a future onnx release
+# from pulling a newer numpy/protobuf; widen them after CI passes on the Colab image.
+dependencies = [
+    "torchinfo>=1.8,<2",
+    "netron>=7.0",
+    "onnx>=1.17,<1.24",
+    "onnxscript>=0.3,<0.8",
+]
 
 [project.optional-dependencies]
-tools = ["torchinfo>=1.8", "netron>=7.0"]
+tools = []  # now part of the base install; kept so "colabutilscs4337[tools]" still works
 cam = ["grad-cam>=1.5"]
 fastai = ["fastai>=2.7"]
 all = ["colabutilscs4337[tools,cam]"]

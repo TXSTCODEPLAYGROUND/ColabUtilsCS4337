@@ -18,7 +18,6 @@ One import gives you short, safe helpers for the chores around every assignment:
    %pip install -q --upgrade colabutilscs4337
    import colabutilscs4337 as cu
 
-   cu.install("all")                        # torchinfo, netron, grad-cam (safely)
    cu.env.load_secrets("WANDB_API_KEY")     # from the Colab Secrets panel
    run = cu.drive.new_run("baseline")       # MyDrive/runs/<notebook>_<time>_baseline/
    cu.viz.show_by_class(train_ds)           # one row of examples per class

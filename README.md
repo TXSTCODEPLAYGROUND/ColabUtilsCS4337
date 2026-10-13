@@ -22,27 +22,28 @@ reference. This README is a short overview.
 ## Quick start (first cell of every notebook)
 
 ```python
-%pip install -q --upgrade colabutilscs4337
+%pip install -q --upgrade colabutilscs4337   # also installs torchinfo, netron, onnx, onnxscript
 import colabutilscs4337 as cu
-cu.install("all")   # adds torchinfo, netron, grad-cam; never changes Colab's torch/fastai/numpy
 cu.env.check()      # compares installed versions with the tested Colab runtime
 ```
 
 If `%pip install --upgrade` replaced a version you had already imported, use **Runtime > Restart session**.
 
-## Why `cu.install()` instead of `pip install colabutilscs4337[all]`?
+## What gets installed
 
 Colab ships torch, torchvision, fastai, numpy, and matplotlib built for its GPU runtime.
 This package never declares them as dependencies, so installing it cannot replace them.
-`cu.install()` goes further for the optional extras: it pins every installed package
-to its current version, dry-runs pip, and refuses if anything already installed would
-change. Use `cu.install("cam", dry=True)` to preview.
+It does install the four tools Colab lacks (`torchinfo`, `netron`, `onnx`,
+`onnxscript`); CI checks inside Google's Colab image that they change no preinstalled
+package, and their versions are capped so a future release cannot pull a newer numpy.
 
-Plain pip works too:
+`cu.install()` adds optional packages the same safe way: it pins every installed
+package to its current version, dry-runs pip, and refuses if anything already
+installed would change.
 
-```bash
-pip list --format=freeze | grep -viE '^(colabutilscs4337|torchinfo|netron|grad-cam|ttach)==' > /tmp/c.txt
-pip install -c /tmp/c.txt --upgrade "colabutilscs4337[all]"
+```python
+cu.install("cam")  # pytorch-grad-cam, for gradcam(..., method="gradcam++")
+cu.install("cam", dry=True)  # preview only
 ```
 
 ## Secrets (API keys and tokens)
