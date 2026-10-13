@@ -38,8 +38,10 @@ jobs:
           name: dist
           path: dist/
 
+  # Optional: if TestPyPI has no trusted publisher, this fails and PyPI still runs.
   publish-testpypi:
     needs: build
+    continue-on-error: true
     runs-on: ubuntu-latest
     environment:
       name: testpypi
@@ -56,7 +58,8 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
   publish-pypi:
-    needs: publish-testpypi
+    needs: [build, publish-testpypi]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     runs-on: ubuntu-latest
     environment:
       name: pypi
