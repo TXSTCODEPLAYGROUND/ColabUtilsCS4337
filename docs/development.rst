@@ -64,8 +64,8 @@ Releasing
    ``git push && git tag v0.2.0 && git push origin v0.2.0``. The release workflow
    reuses (or waits for) the CI run of that ``main`` push instead of running the
    ~6 minute Colab image job again, then builds the package and publishes it to
-   TestPyPI. If you tag a commit that was never pushed to ``main``, it runs the
-   full CI first.
+   TestPyPI. If that CI run failed, the release stops right away; if you tag a
+   commit that was never pushed to ``main``, it runs the full CI first.
 #. Open ``notebooks/smoke_test.ipynb`` in Colab on a GPU runtime, set ``VERSION``,
    and **Run all**.
 #. Approve the ``pypi`` environment in the GitHub Actions run to publish to PyPI.

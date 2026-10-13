@@ -25,13 +25,14 @@ classifiers = [
 ]
 # Colab already provides torch, torchvision, fastai, numpy, matplotlib, pillow, ipywidgets.
 # Declaring them here would let pip replace Colab's builds, so they are never listed.
-# Everything below is absent from Colab and resolves against constraints/colab-gpu.txt
-# without changing a preinstalled package. Upper bounds keep a future onnx release
-# from pulling a newer numpy/protobuf; widen them after CI passes on the Colab image.
+# Everything below is absent from Colab and must not change a preinstalled package.
+# Upper bounds keep a future release from pulling a newer numpy/protobuf; widen them
+# only after CI passes on the Colab image. onnx>=1.23 needs protobuf>=6.31, but the
+# Colab runtime image still ships protobuf 5.29.
 dependencies = [
     "torchinfo>=1.8,<2",
     "netron>=7.0",
-    "onnx>=1.17,<1.24",
+    "onnx>=1.18,<1.23",
     "onnxscript>=0.3,<0.8",
 ]
 

@@ -23,7 +23,7 @@ from ._compat import COLAB_PROVIDED
 PACKAGE = "colabutilscs4337"
 
 EXTRAS: dict[str, list[str]] = {
-    "tools": ["torchinfo>=1.8,<2", "netron>=7.0", "onnx>=1.17,<1.24", "onnxscript>=0.3,<0.8"],
+    "tools": ["torchinfo>=1.8,<2", "netron>=7.0", "onnx>=1.18,<1.23", "onnxscript>=0.3,<0.8"],
     "cam": ["grad-cam>=1.5"],
     "fastai": ["fastai>=2.7"],
 }
