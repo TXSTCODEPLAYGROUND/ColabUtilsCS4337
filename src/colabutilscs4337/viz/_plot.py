@@ -45,6 +45,36 @@ def to_image(
     return arr
 
 
+def show_once(fig):
+    """Draw ``fig`` once in a notebook and return it (for ``fig.savefig(...)``).
+
+    With the inline backend a returned figure is drawn twice: once when the cell
+    finishes and once more as the cell's value. Here the figure is drawn right away
+    and closed, and its automatic display is skipped until the cell ends.
+    """
+    plt = require("matplotlib.pyplot")
+    if "inline" not in plt.get_backend().lower():
+        return fig
+    try:
+        from IPython import get_ipython
+        from IPython.display import display
+    except ImportError:
+        return fig
+    ip = get_ipython()
+    if ip is None:
+        return fig
+    display(fig)
+    plt.close(fig)
+    fig._ipython_display_ = lambda: None
+
+    def restore(*_):
+        fig.__dict__.pop("_ipython_display_", None)
+        ip.events.unregister("post_run_cell", restore)
+
+    ip.events.register("post_run_cell", restore)
+    return fig
+
+
 def _resize(heatmap, size: tuple[int, int]):
     torch = require("torch")
     t = torch.as_tensor(heatmap, dtype=torch.float32)
@@ -97,7 +127,7 @@ def show_cam(
     axes[0, -1].set_title(title or "")
     axes[0, -1].axis("off")
     fig.tight_layout()
-    return fig
+    return show_once(fig)
 
 
 def show_feature_maps(
@@ -128,4 +158,4 @@ def show_feature_maps(
     if title:
         fig.suptitle(title)
     fig.tight_layout()
-    return fig
+    return show_once(fig)

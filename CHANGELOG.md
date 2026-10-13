@@ -3,6 +3,11 @@
 Each release lists the Google Colab runtime it was tested against
 (from [googlecolab/backend-info](https://github.com/googlecolab/backend-info)).
 
+## 0.1.1 (unreleased)
+
+- `viz.show_images()`, `show_by_class()`, `show_cam()`, `show_feature_maps()`: the plot no
+  longer appears twice when the call is the last line of a notebook cell.
+
 ## 0.1.0 (2026-10-12)
 
 Tested against: Colab GPU runtime, Python 3.13.15, torch 2.11.0+cu130, torchvision 0.26.0+cu130, fastai 2.8.12.

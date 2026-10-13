@@ -15,6 +15,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from .._compat import require
+from ._plot import show_once
 
 Classes = Sequence[str] | Mapping[int, str] | None
 
@@ -286,7 +287,7 @@ def show_images(
     if title:
         fig.suptitle(title)
     fig.tight_layout()
-    return fig
+    return show_once(fig)
 
 
 def show_by_class(
@@ -378,4 +379,4 @@ def show_by_class(
     if title:
         fig.suptitle(title)
     fig.tight_layout()
-    return fig
+    return show_once(fig)
