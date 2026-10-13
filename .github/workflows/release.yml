@@ -13,11 +13,40 @@ on:
     tags: ["v*"]
 
 jobs:
+  # Reuse the CI run from pushing this commit to main (the Colab image job takes
+  # ~6 min). Waits for it if still running; runs the full CI only if there is none.
+  ci-status:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      passed: ${{ steps.find.outputs.passed }}
+    steps:
+      - id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          id=$(gh run list -R "$REPO" --workflow ci.yml --commit "$SHA" --event push \
+            --json databaseId,status,conclusion \
+            --jq '[.[] | select(.status != "completed" or .conclusion == "success")][0].databaseId // empty')
+          if [ -n "$id" ] && gh run watch "$id" -R "$REPO" --exit-status > /dev/null; then
+            echo "Reusing CI run $id for $SHA"
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No passing CI run for $SHA; running CI"
+            echo "passed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   ci:
+    needs: ci-status
+    if: needs.ci-status.outputs.passed != 'true'
     uses: ./.github/workflows/ci.yml
 
   build:
-    needs: ci
+    needs: [ci-status, ci]
+    if: ${{ !cancelled() && (needs.ci-status.outputs.passed == 'true' || needs.ci.result == 'success') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +70,7 @@ jobs:
   # Optional: if TestPyPI has no trusted publisher, this fails and PyPI still runs.
   publish-testpypi:
     needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     continue-on-error: true
     runs-on: ubuntu-latest
     environment:
