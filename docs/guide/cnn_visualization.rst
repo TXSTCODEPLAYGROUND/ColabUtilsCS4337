@@ -21,6 +21,9 @@ Grad-CAM highlights the parts of the image that pushed the model toward a class.
   Choose another with ``target_layer="layer3"``.
 * **Normalized input?** Pass ``mean=cu.viz.IMAGENET_MEAN, std=cu.viz.IMAGENET_STD``
   to ``show_cam`` so the image underneath looks natural.
+* **Reading the colors.** A color bar next to the overlay maps colors to importance
+  from 0 (ignored) to 1 (most important); the map is scaled per image. Hide it with
+  ``show_color_bar=False``.
 
 With fastai:
 

@@ -13,6 +13,41 @@ Layer-by-layer summary
 Shows every layer's output shape and parameter count (uses ``torchinfo``, installed
 with the package).
 
+Input and output shape of one block
+-----------------------------------
+
+When you need the exact shape going *into* a block (to build a new head, or to
+feed the block on its own), ask the model instead of reading it off the table:
+
+.. code-block:: python
+
+   backbone = torchvision.models.efficientnet_b0().features
+   cu.tools.layer_shapes(backbone, backbone[2][0], input_size=(1, 3, 160, 160))
+   # 2.0 (MBConv): (1, 16, 80, 80) -> (1, 24, 40, 40)
+
+   s = cu.tools.layer_shapes(backbone, "2.0", (1, 3, 160, 160), verbose=False)
+   s.input, s.output      # first input / first output
+   s.inputs               # every positional input, e.g. [(1, 16, 80, 80)]
+   s.kwargs               # tensors passed by keyword, e.g. {"mask": (1, 80, 80)}
+
+   cu.tools.layer_shapes(model, ["layer1", "layer2.0", "fc"])   # several at once
+   cu.tools.layer_shapes(learn, "0.4", x=xb)                     # fastai, real batch
+
+The layer can be the module itself or its dotted name (as listed by
+:func:`~colabutilscs4337.viz.layer_names`). The model runs once in eval mode
+without gradients, so BatchNorm statistics are not changed. A block that runs more
+than once per pass (shared weights) reports its first call.
+
+This replaces the usual hand-written hook:
+
+.. code-block:: python
+
+   inputs = []
+   hook = block.register_forward_pre_hook(lambda m, args: inputs.append(tuple(args[0].shape)))
+   with torch.no_grad():
+       backbone.eval()(torch.zeros(1, 3, 160, 160))
+   hook.remove()
+
 Interactive graph with Netron
 -----------------------------
 

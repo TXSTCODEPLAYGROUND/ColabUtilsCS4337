@@ -104,18 +104,34 @@ def show_cam(
     title: str | None = None,
     ax: Any = None,
     side_by_side: bool = True,
+    show_color_bar: bool = True,
     **image_kwargs,
 ):
-    """Show the image and its CAM overlay. ``cam`` is a :class:`CAMResult` or ``(H, W)`` heatmap."""
+    """Show the image and its CAM overlay. ``cam`` is a :class:`CAMResult` or ``(H, W)`` heatmap.
+
+    ``show_color_bar`` adds a 0-1 importance scale next to the overlay (CAMs are
+    normalized to 0-1 per image). Pass ``ax`` to draw only the overlay into your own axes.
+
+    Examples
+    --------
+    >>> cu.viz.show_cam(img, cam)                          # input | overlay + color bar
+    >>> cu.viz.show_cam(img, cam, show_color_bar=False, side_by_side=False)
+    """
     plt = require("matplotlib.pyplot")
     if title is None and hasattr(cam, "class_idx"):
         title = f"{cam.method} on {cam.layer}: class {cam.class_idx[0]} (score {cam.scores[0]:.2f})"
     blended = overlay(image, cam, alpha=alpha, cmap=cmap, **image_kwargs)
 
+    def color_bar(target):
+        mappable = plt.cm.ScalarMappable(norm=plt.Normalize(0, 1), cmap=cmap)
+        target.figure.colorbar(mappable, ax=target, fraction=0.046, pad=0.04, label="importance")
+
     if ax is not None:
         ax.imshow(blended)
         ax.set_title(title or "")
         ax.axis("off")
+        if show_color_bar:
+            color_bar(ax)
         return ax
     ncols = 2 if side_by_side else 1
     fig, axes = plt.subplots(1, ncols, figsize=(5 * ncols, 5), squeeze=False)
@@ -126,6 +142,8 @@ def show_cam(
     axes[0, -1].imshow(blended)
     axes[0, -1].set_title(title or "")
     axes[0, -1].axis("off")
+    if show_color_bar:
+        color_bar(axes[0, -1])
     fig.tight_layout()
     return show_once(fig)
 

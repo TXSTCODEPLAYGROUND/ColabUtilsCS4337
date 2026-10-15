@@ -9,3 +9,5 @@ Installing extras: ``cu.install``
    :members:
 
 .. autoexception:: colabutilscs4337._install.InstallError
+
+.. autoexception:: colabutilscs4337._install.UnresolvableError

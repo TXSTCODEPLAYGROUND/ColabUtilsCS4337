@@ -3,16 +3,27 @@
 Each release lists the Google Colab runtime it was tested against
 (from [googlecolab/backend-info](https://github.com/googlecolab/backend-info)).
 
-## 0.1.1 (unreleased)
+## 0.1.4 (unreleased)
 
-- `viz.show_images()`, `show_by_class()`, `show_cam()`, `show_feature_maps()`: the plot no
-  longer appears twice when the call is the last line of a notebook cell.
+- `tools.layer_shapes()`: input and output shapes of any layer or block (all positional
+  inputs, keyword tensors, and every output), from one forward pass in eval mode.
+- `viz.show_cam(..., show_color_bar=True)`: a 0-1 importance color bar next to the overlay.
+- `install()` uses Colab's preinstalled `uv` (much faster), falling back to pip.
+  `backend="auto" | "uv" | "pip"`. `upgrade=True` never upgrades dependencies.
+
+## 0.1.3 (2026-10-13)
+
 - `torchinfo`, `netron`, `onnx`, and `onnxscript` are now installed with the package
   (versions capped; verified to change no preinstalled Colab package). `onnx` stays below
   1.23, which would require upgrading Colab's protobuf. `cu.install("tools")` is no longer
   needed.
 - `tools.netron()` / `export_for_netron()` export to ONNX by default, with the graph's
   input and output named `input` and `output`, and hide torch's internal `treespec` warning.
+
+## 0.1.1 (2026-10-12)
+
+- `viz.show_images()`, `show_by_class()`, `show_cam()`, `show_feature_maps()`: the plot no
+  longer appears twice when the call is the last line of a notebook cell.
 
 ## 0.1.0 (2026-10-12)
 

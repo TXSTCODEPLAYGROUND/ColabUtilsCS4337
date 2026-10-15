@@ -33,6 +33,22 @@ EOF
 python3 -c "import pytest" 2>/dev/null || python3 -m pip install -q pytest
 python3 -c "import colabutilscs4337 as cu; cu.env.check()"
 
+# 3. cu.install() through uv into Colab's system Python (uv ships with Colab).
+python3 - <<'EOF'
+import shutil
+
+import colabutilscs4337 as cu
+
+if shutil.which("uv") is None:
+    print("uv is not in this image; skipping the uv install check")
+else:
+    preview = cu.install("torchmetrics", dry=True, backend="uv")
+    assert "torchmetrics" in preview.added and not preview.changed, preview
+    result = cu.install("pyfiglet", backend="uv")
+    assert result.backend == "uv" and "pyfiglet" in result.added, result
+    assert not result.changed, result
+EOF
+
 # Test the installed package, not the source tree.
 cd /tmp
 python3 -m pytest -q -p no:cacheprovider "$OLDPWD/tests"

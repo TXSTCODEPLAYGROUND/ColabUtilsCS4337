@@ -54,17 +54,31 @@ cost you a runtime restart (or a broken runtime). :func:`colabutilscs4337.instal
 prevents that:
 
 #. It records every installed package and version.
-#. It asks pip, in a dry run, what it *would* do with all of those versions pinned.
+#. It asks the installer, in a dry run, what it *would* do with all of those
+   versions pinned.
 #. It installs only if nothing already installed changes; otherwise it stops and
    explains what would have changed.
 
 .. code-block:: python
 
-   cu.install("cam", dry=True)        # preview: "[dry run] Added: grad-cam 1.5.7, ttach 0.0.3"
+   cu.install("cam", dry=True)        # preview: "[dry run, uv] Added: grad-cam 1.5.7, ttach 0.0.3"
    cu.install("cam")                  # install
-   cu.install("timm")                 # any other package works too
+   cu.install("torchmetrics")         # any other package works too
+   cu.install("torchmetrics", upgrade=True)   # newer version; its dependencies stay as they are
    cu.install("numpy==2.3.0")         # refused: would change Colab's numpy
    cu.install("numpy==2.3.0", allow_changes=True)   # only if you really mean it
+
+**Fast installs with uv.** Colab ships `uv <https://docs.astral.sh/uv/>`_, a much
+faster installer, and ``cu.install`` uses it automatically (``backend="auto"``).
+Without uv it uses pip; if uv fails for any reason other than an impossible
+request, it retries with pip. Force one with ``backend="uv"`` or ``backend="pip"``.
+
+.. note::
+
+   If you call uv yourself, avoid ``uv pip install --upgrade``: unlike pip, it
+   upgrades *every* dependency (Colab's numpy, protobuf, ...). Use
+   ``uv pip install --system --upgrade-package NAME NAME`` instead, or simply
+   ``cu.install(NAME, upgrade=True)``.
 
 Plain pip works too, with the same protection, by pinning what is installed:
 

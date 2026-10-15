@@ -38,12 +38,12 @@ It does install the four tools Colab lacks (`torchinfo`, `netron`, `onnx`,
 package, and their versions are capped so a future release cannot pull a newer numpy.
 
 `cu.install()` adds optional packages the same safe way: it pins every installed
-package to its current version, dry-runs pip, and refuses if anything already
-installed would change.
+package to its current version, dry-runs the install, and refuses if anything already
+installed would change. It uses Colab's preinstalled `uv` for speed and falls back to pip.
 
 ```python
 cu.install("cam")  # pytorch-grad-cam, for gradcam(..., method="gradcam++")
-cu.install("cam", dry=True)  # preview only
+cu.install("torchmetrics", dry=True)  # preview only
 ```
 
 ## Secrets (API keys and tokens)
@@ -143,6 +143,8 @@ Settings come from (highest first): function arguments, environment variables
 
 ```python
 cu.tools.summary(learn, input_size=(1, 3, 224, 224))  # fastai Learner or nn.Module
+cu.tools.layer_shapes(backbone, backbone.features[2][0], (1, 3, 160, 160))
+# features.2.0 (MBConv): (1, 16, 80, 80) -> (1, 24, 40, 40)
 cu.tools.netron(learn)  # interactive graph in the cell output
 cu.tools.netron("model.onnx")  # or any file Netron supports
 
@@ -154,7 +156,7 @@ model = cu.models.load_model("model.pth", arch=torchvision.models.resnet18(num_c
 
 ```python
 cam = cu.viz.gradcam(model, x, class_idx=None)  # x: (1, 3, H, W) normalized tensor
-cu.viz.show_cam(image, cam)  # image: PIL / HxWx3 array / tensor
+cu.viz.show_cam(image, cam)  # image: PIL / HxWx3 array / tensor; 0-1 color bar included
 
 acts = cu.viz.activations(model, x, layers=["layer1", "layer4"])
 cu.viz.show_feature_maps(acts["layer1"], n=16)

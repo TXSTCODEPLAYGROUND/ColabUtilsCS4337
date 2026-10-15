@@ -89,7 +89,14 @@ def test_plots(resnet, x):
     matplotlib.use("Agg")
     result = viz.gradcam(resnet, x[0])
     fig = viz.show_cam(x[0], result, mean=viz.IMAGENET_MEAN, std=viz.IMAGENET_STD)
-    assert len(fig.axes) == 2
+    assert len(fig.axes) == 3  # input, overlay, color bar
+    assert fig.axes[-1].get_ylabel() == "importance"
+    assert len(viz.show_cam(x[0], result, show_color_bar=False).axes) == 2
+    import matplotlib.pyplot as plt
+
+    _, ax = plt.subplots()
+    viz.show_cam(x[0], result, ax=ax)
+    assert len(ax.figure.axes) == 2
     acts = viz.activations(resnet, x, layers=["layer1"])
     fig = viz.show_feature_maps(acts["layer1"], n=10, ncols=5)
     assert len(fig.axes) == 10
