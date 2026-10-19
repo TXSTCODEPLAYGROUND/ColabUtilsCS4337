@@ -33,6 +33,41 @@ With fastai:
    cam = cu.viz.gradcam(learn, x)
    cu.viz.show_cam(x, cam, mean=cu.viz.IMAGENET_MEAN, std=cu.viz.IMAGENET_STD)
 
+Several classes and several layers
+-----------------------------------
+
+:func:`~colabutilscs4337.viz.visualize_gradcam` draws one row per class and one
+column per layer. A single class or a single layer becomes one row. Each title is
+the layer name, the category, and that class's probability, and the color bar is
+the same 0-1 importance scale.
+
+.. code-block:: python
+
+   df = cu.viz.get_classification_topk(model, img, categories, k=5, preprocess=preprocess)
+   cats = cu.viz.find_categories_like(categories, r"\bcat\b")   # [("tabby cat", 281), ...]
+
+   cu.viz.visualize_gradcam(
+       model,
+       img,
+       target_indices=[281, 282],
+       target_layers=[model.layer1[-1], model.layer2[-1], model.layer3[-1], model.layer4[-1]],
+       preprocess=preprocess,
+       categories=categories,
+   )
+
+``preprocess`` is your own transform and runs only when ``img`` is a PIL image:
+
+.. code-block:: python
+
+   preprocess = transforms.Compose([
+       transforms.Resize(224),
+       transforms.CenterCrop(224),
+       transforms.ToTensor(),
+       transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+   ])
+
+``method="gradcam++"`` works here too, after ``cu.install("cam")``.
+
 Other CAM methods
 -----------------
 

@@ -8,6 +8,12 @@ Each release lists the Google Colab runtime it was tested against
 - `tools.layer_shapes()`: input and output shapes of any layer or block (all positional
   inputs, keyword tensors, and every output), from one forward pass in eval mode.
 - `viz.show_cam(..., show_color_bar=True)`: a 0-1 importance color bar next to the overlay.
+- `viz.get_classification_topk()`: softmax probabilities as a DataFrame (`Index`, `label`,
+  `probability`), top `k` or every class. `viz.find_categories_like()`: category names
+  matching a regular expression, as `(name, index)` pairs.
+- `viz.visualize_gradcam()`: one row per class and one column per layer (one row when
+  either side has a single entry), with a 0-1 color bar and titles of layer, category,
+  and probability.
 - `install()` uses Colab's preinstalled `uv` (much faster), falling back to pip.
   `backend="auto" | "uv" | "pip"`. `upgrade=True` never upgrades dependencies.
 

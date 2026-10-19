@@ -3,9 +3,18 @@
 from typing import Any
 
 from ._cam import BACKEND_METHODS, CAMResult, gradcam, suggest_target_layer
+from ._classify import find_categories_like, get_classification_topk
 from ._data import show_by_class, show_images, tensor_to_image
 from ._hooks import activations, layer_names, resolve_layer
-from ._plot import IMAGENET_MEAN, IMAGENET_STD, overlay, show_cam, show_feature_maps, to_image
+from ._plot import (
+    IMAGENET_MEAN,
+    IMAGENET_STD,
+    overlay,
+    show_cam,
+    show_feature_maps,
+    to_image,
+    visualize_gradcam,
+)
 
 
 def learner_input(learn: Any, item: Any):
@@ -20,6 +29,8 @@ __all__ = [
     "IMAGENET_MEAN",
     "IMAGENET_STD",
     "activations",
+    "find_categories_like",
+    "get_classification_topk",
     "gradcam",
     "layer_names",
     "learner_input",
@@ -32,4 +43,5 @@ __all__ = [
     "suggest_target_layer",
     "tensor_to_image",
     "to_image",
+    "visualize_gradcam",
 ]

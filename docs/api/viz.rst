@@ -19,6 +19,9 @@ Grad-CAM
 .. autoclass:: colabutilscs4337.viz.CAMResult
    :members: cam
 .. autofunction:: colabutilscs4337.viz.show_cam
+.. autofunction:: colabutilscs4337.viz.visualize_gradcam
+.. autofunction:: colabutilscs4337.viz.get_classification_topk
+.. autofunction:: colabutilscs4337.viz.find_categories_like
 .. autofunction:: colabutilscs4337.viz.overlay
 .. autofunction:: colabutilscs4337.viz.suggest_target_layer
 .. autofunction:: colabutilscs4337.viz.learner_input

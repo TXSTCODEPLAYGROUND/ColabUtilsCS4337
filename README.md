@@ -157,6 +157,15 @@ model = cu.models.load_model("model.pth", arch=torchvision.models.resnet18(num_c
 ```python
 cam = cu.viz.gradcam(model, x, class_idx=None)  # x: (1, 3, H, W) normalized tensor
 cu.viz.show_cam(image, cam)  # image: PIL / HxWx3 array / tensor; 0-1 color bar included
+df = cu.viz.get_classification_topk(model, img, categories, preprocess=preprocess)
+cu.viz.visualize_gradcam(
+    model,
+    img,
+    target_indices=[281, 282],
+    target_layers=[model.layer4[-1]],
+    preprocess=preprocess,
+    categories=categories,
+)
 
 acts = cu.viz.activations(model, x, layers=["layer1", "layer4"])
 cu.viz.show_feature_maps(acts["layer1"], n=16)

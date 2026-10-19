@@ -19,6 +19,7 @@ COLAB_PROVIDED = (
     "ipywidgets",
     "timm",
     "opencv-python",
+    "pandas",
 )
 
 # import name -> (pip distribution, extra that provides it)

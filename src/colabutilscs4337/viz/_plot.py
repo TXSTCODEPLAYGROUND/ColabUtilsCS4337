@@ -148,6 +148,132 @@ def show_cam(
     return show_once(fig)
 
 
+def _as_index_list(target_indices: Any) -> list[int]:
+    torch = require("torch")
+    if torch.is_tensor(target_indices):
+        values = target_indices.detach().cpu().flatten().tolist()
+    elif isinstance(target_indices, int):
+        values = [target_indices]
+    else:
+        values = list(target_indices)
+    if not values:
+        raise ValueError("target_indices is empty.")
+    return [int(v) for v in values]
+
+
+def visualize_gradcam(
+    model: Any,
+    image: Any,
+    target_indices: Any,
+    target_layers: Any,
+    *,
+    preprocess: Any = None,
+    categories: Any = None,
+    method: str = "gradcam",
+    alpha: float = 0.5,
+    cmap: str = "jet",
+    show_color_bar: bool = True,
+    size: float = 3.2,
+    mean: Sequence[float] | None = None,
+    std: Sequence[float] | None = None,
+):
+    """Grad-CAM for several classes and layers: one row per class, one column per layer.
+
+    A single class or a single layer is drawn as one row. Each title is the layer
+    name, the category name, and that class's probability. The color bar is a 0-1
+    importance scale, the same as :func:`show_cam`.
+
+    Parameters
+    ----------
+    model
+        An ``nn.Module`` or a fastai ``Learner``.
+    image
+        A PIL image, or a tensor ``(C, H, W)`` / ``(1, C, H, W)``.
+    target_indices
+        Class indices to explain (a list or a 1-D tensor).
+    target_layers
+        Modules or dotted names, for example ``[model.layer1[-1], model.layer4[-1]]``.
+    preprocess
+        Transform applied to a PIL image. Ignored when ``image`` is a tensor.
+    categories
+        Class names, a list or ``{index: name}``, used in the titles.
+    method
+        ``"gradcam"`` (built in) or a pytorch-grad-cam method such as ``"gradcam++"``
+        (needs ``cu.install("cam")``).
+    mean, std
+        Undo normalization for the picture under the heatmap. When omitted, ImageNet
+        statistics are used if the tensor is outside ``[0, 1]``.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+
+    Examples
+    --------
+    >>> cu.viz.visualize_gradcam(
+    ...     model, img, target_indices=[281, 282],
+    ...     target_layers=[model.layer1[-1], model.layer4[-1]],
+    ...     preprocess=preprocess, categories=categories,
+    ... )
+    """
+    from ._cam import gradcam
+    from ._classify import _label, class_probabilities, model_input
+    from ._hooks import resolve_layer
+
+    plt = require("matplotlib.pyplot")
+    indices = _as_index_list(target_indices)
+    if isinstance(target_layers, (list, tuple)):
+        layers = list(target_layers)
+    else:
+        layers = [target_layers]
+    if not layers:
+        raise ValueError("target_layers is empty.")
+
+    batch = model_input(image, preprocess)
+    probs = class_probabilities(model, batch)
+    if len(indices) > 1:
+        batch = batch.expand(len(indices), *batch.shape[1:]).contiguous()
+    shown = batch[0]
+    if mean is None and std is None and (float(shown.min()) < 0 or float(shown.max()) > 1):
+        mean, std = IMAGENET_MEAN, IMAGENET_STD
+    base = to_image(shown, mean, std)
+
+    names = [resolve_layer(model, layer)[0] for layer in layers]
+    heatmaps = []
+    for layer in layers:
+        result = gradcam(model, batch, target_layer=layer, class_idx=indices, method=method)
+        heatmaps.append(result.cams)
+
+    one_row = len(indices) == 1 or len(layers) == 1
+    cells = [(r, c) for r in range(len(indices)) for c in range(len(layers))]
+    if one_row:
+        nrows, ncols = 1, len(cells)
+        grid = [cells]
+    else:
+        nrows, ncols = len(indices), len(layers)
+        grid = [cells[r * ncols : (r + 1) * ncols] for r in range(nrows)]
+
+    fig, axes = plt.subplots(
+        nrows,
+        ncols,
+        figsize=(size * ncols, size * nrows + 0.45 * nrows),
+        squeeze=False,
+        layout="constrained",
+    )
+    for r, row in enumerate(grid):
+        for c, (cls_i, layer_i) in enumerate(row):
+            ax = axes[r, c]
+            ax.imshow(overlay(base, heatmaps[layer_i][cls_i], alpha=alpha, cmap=cmap))
+            label = _label(categories, indices[cls_i])
+            prob = float(probs[indices[cls_i]])
+            ax.set_title(f"{names[layer_i]}\n{label}  {prob:.3f}", fontsize=8)
+            ax.axis("off")
+    if show_color_bar:
+        mappable = plt.cm.ScalarMappable(norm=plt.Normalize(0, 1), cmap=cmap)
+        fig.colorbar(mappable, ax=axes, fraction=0.046, pad=0.04, label="importance")
+    return show_once(fig)
+
+
 def show_feature_maps(
     act: Any,
     n: int = 16,
