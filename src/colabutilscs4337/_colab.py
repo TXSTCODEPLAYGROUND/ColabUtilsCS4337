@@ -31,6 +31,26 @@ def is_colab() -> bool:
     return True
 
 
+def is_notebook() -> bool:
+    """True in a notebook kernel (Colab, Jupyter, VS Code); false in a plain terminal.
+
+    A Colab CLI (SSH) session is Colab but not a notebook: Drive cannot be mounted and
+    Secrets cannot be read there.
+    """
+    try:
+        from IPython import get_ipython
+    except ImportError:
+        return False
+    return hasattr(get_ipython(), "kernel")
+
+
+SSH_MOUNT_HINT = (
+    "Drive can only be mounted from a notebook cell. In a Colab CLI (SSH) session, exit it "
+    "and run `colab drivemount -s <session>` in your local terminal, attach again with "
+    "`colab ssh -s <session>`, and pass mount=False (or mount=False to sync_env_file)."
+)
+
+
 def drive_root() -> Path:
     """Root of "My Drive": the mounted Drive in Colab, a local folder elsewhere."""
     if is_colab():
@@ -59,6 +79,8 @@ def mount(force_remount: bool = False, timeout_ms: int = 120_000) -> Path:
         return root
 
     if force_remount or not is_drive_mounted():
+        if not is_notebook():
+            raise RuntimeError(f"Google Drive is not mounted. {SSH_MOUNT_HINT}")
         from google.colab import drive
 
         drive.mount(DRIVE_MOUNTPOINT, force_remount=force_remount, timeout_ms=timeout_ms)

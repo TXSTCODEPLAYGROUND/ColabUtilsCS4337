@@ -69,14 +69,22 @@ def sync_env_file(
         if mount:
             _colab.mount()
         if not _colab.is_drive_mounted():
-            raise EnvFileError(
-                f"Google Drive is not mounted, so {path} cannot be read. Run "
-                "`from google.colab import drive; drive.mount('/content/drive')` first."
+            fix = (
+                "Run `from google.colab import drive; drive.mount('/content/drive')` first."
+                if _colab.is_notebook()
+                else _colab.SSH_MOUNT_HINT
             )
+            raise EnvFileError(f"Google Drive is not mounted, so {path} cannot be read. {fix}")
     if not path.is_file():
+        how = (
+            "Upload it to Google Drive at that path (a file of NAME=value lines)"
+            if _colab.is_notebook() or not _colab.is_colab()
+            else "Create it on Drive from the session, a file of NAME=value lines, e.g. "
+            f'`echo "WANDB_API_KEY=your-key" >> {path}` (the Drive mount is shared with '
+            "the session)"
+        )
         raise EnvFileError(
-            f"Env file not found: {path}. Upload it to Google Drive at that path (a file of "
-            "NAME=value lines), or pass the right location as `source`."
+            f"Env file not found: {path}. {how}, or pass the right location as `source`."
         )
 
     dest = Path(dest).expanduser()

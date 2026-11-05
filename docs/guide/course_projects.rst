@@ -36,6 +36,30 @@ Keys from Colab Secrets can be saved to ``.env`` too (for runs from Colab's term
 
    cu.env.load_secrets("WANDB_API_KEY", persist_to=REPO / ".env")
 
+In a Colab CLI (SSH) session
+----------------------------
+
+A session opened with ``colab ssh`` is Colab but not a notebook: Colab Secrets cannot be read
+and ``drive.mount`` does not work. Mount Drive from your **local** terminal
+(``colab drivemount -s <session>``, then ``colab ssh -s <session>`` again), keep your keys in an
+env file on Drive, and call ``setup_colab`` with ``mount=False``:
+
+.. code-block:: bash
+
+   pip install -q colabutilscs4337
+   python - <<'EOF'
+   import colabutilscs4337 as cu
+
+   cu.project.setup_colab(
+       "https://github.com/TXSTCODEPLAYGROUND/CodeCS4337Fall2026.git",
+       env_source="/content/drive/MyDrive/cs4337.env",
+       mount=False,
+   )
+   EOF
+
+If Drive is not mounted, or the env file is not there, the error says which command or file
+is missing (:class:`~colabutilscs4337.env.EnvFileError`).
+
 Paths, configs, and finding runs
 --------------------------------
 

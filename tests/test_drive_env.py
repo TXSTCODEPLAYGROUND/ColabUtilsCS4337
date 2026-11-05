@@ -88,3 +88,27 @@ def test_load_secrets_persist_to(local, tmp_path, monkeypatch):
     monkeypatch.delenv("CU_P_KEY")
     env.load_secrets("CU_P_KEY", persist_to=target, verbose=False)
     assert target.read_text() == "CU_P_KEY=s3\n"  # not duplicated
+
+
+def test_ssh_session_messages_point_to_the_cli(monkeypatch, tmp_path):
+    """No notebook in an SSH session: say how to mount and where the file goes."""
+    root = tmp_path / "drive" / "MyDrive"
+    monkeypatch.setattr(_colab, "is_colab", lambda: True)
+    monkeypatch.setattr(_colab, "is_notebook", lambda: False)
+    monkeypatch.setattr(_colab, "drive_root", lambda: root)
+    monkeypatch.setattr(_colab, "is_drive_mounted", lambda: False)
+    with pytest.raises(env.EnvFileError, match="colab drivemount"):
+        env.sync_env_file("x.env", dest=tmp_path / ".env", mount=False)
+
+    root.mkdir(parents=True)
+    monkeypatch.setattr(_colab, "is_drive_mounted", lambda: True)
+    with pytest.raises(env.EnvFileError, match=r"Create it on Drive.*x\.env"):
+        env.sync_env_file("x.env", dest=tmp_path / ".env")
+
+
+def test_mount_in_ssh_session_explains_drivemount(monkeypatch):
+    monkeypatch.setattr(_colab, "is_colab", lambda: True)
+    monkeypatch.setattr(_colab, "is_notebook", lambda: False)
+    monkeypatch.setattr(_colab, "is_drive_mounted", lambda: False)
+    with pytest.raises(RuntimeError, match="colab drivemount"):
+        _colab.mount()

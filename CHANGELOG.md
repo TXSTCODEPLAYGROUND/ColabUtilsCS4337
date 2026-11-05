@@ -3,6 +3,16 @@
 Each release lists the Google Colab runtime it was tested against
 (from [googlecolab/backend-info](https://github.com/googlecolab/backend-info)).
 
+## 0.1.7 (2026-11-05)
+
+Tested against: the same Colab runtime as 0.1.6 (Python 3.13.15, torch 2.11.0+cu130, torchvision 0.26.0+cu130, fastai 2.8.12). Colab has since moved to newer packages; that sync is not part of this release.
+
+- A Colab CLI (SSH) session is Colab but not a notebook, so Drive cannot be mounted from code
+  there. `env.sync_env_file()` and `project.setup_colab()` now say so: the error names
+  `colab drivemount -s <session>` (run in your local terminal) and `mount=False`, and a
+  missing env file says how to create it on Drive from the session.
+- `drive.mount()` in an SSH session raises that explanation instead of Colab's own error.
+
 ## 0.1.6 (2026-11-05)
 
 Tested against: Colab GPU runtime, Python 3.13.15, torch 2.11.0+cu130, torchvision 0.26.0+cu130, fastai 2.8.12.
