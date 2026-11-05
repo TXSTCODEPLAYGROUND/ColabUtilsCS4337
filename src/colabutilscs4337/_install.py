@@ -30,6 +30,8 @@ EXTRAS: dict[str, list[str]] = {
     "tools": ["torchinfo>=1.8,<2", "netron>=7.0", "onnx>=1.18,<1.23", "onnxscript>=0.3,<0.8"],
     "cam": ["grad-cam>=1.5"],
     "fastai": ["fastai>=2.7"],
+    "lit": ["lightning>=2.5"],
+    "tracking": ["wandb>=0.19"],
 }
 EXTRAS["all"] = EXTRAS["tools"] + EXTRAS["cam"]
 
@@ -328,3 +330,50 @@ def install(
         prefix = f"[dry run, {chosen}] " if dry else ""
         print(prefix + str(result))
     return result
+
+
+def requirements_from_file(path: str | os.PathLike, *, pin: bool = False) -> list[str]:
+    """Requirement strings of a ``requirements.txt``: comments, blank lines and ``-`` options
+    are skipped. With ``pin=False`` (the default) the version specifiers are dropped, so
+    only the package names are returned."""
+    reqs = []
+    for raw in Path(path).read_text().splitlines():
+        line = raw.split(" #", 1)[0].strip()
+        if not line or line.startswith(("#", "-")):
+            continue
+        reqs.append(line if pin else requirement_name(line))
+    return reqs
+
+
+def install_requirements(
+    path: str | os.PathLike = "requirements.txt",
+    *,
+    pin: bool = False,
+    verbose: bool = True,
+    **kwargs,
+) -> list[str]:
+    """Install the packages of a ``requirements.txt`` that are not installed yet.
+
+    This is the notebook setup loop (``pip show`` each package, ``pip install`` the missing
+    ones) done with :func:`install`, so Colab's preinstalled packages are never changed.
+    Versions are not pinned unless ``pin=True``. Extra keyword arguments go to
+    :func:`install`.
+
+    Returns:
+        The requirements that were missing (and are now installed).
+    """
+    from importlib import metadata
+
+    missing = []
+    for req in requirements_from_file(path, pin=pin):
+        name = requirement_name(req)
+        try:
+            metadata.version(name)
+        except metadata.PackageNotFoundError:
+            missing.append(req)
+        else:
+            if verbose:
+                print(f"skip {name} (already installed)")
+    if missing:
+        install(*missing, verbose=verbose, **kwargs)
+    return missing

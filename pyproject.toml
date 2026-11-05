@@ -40,6 +40,8 @@ dependencies = [
 tools = []  # now part of the base install; kept so "colabutilscs4337[tools]" still works
 cam = ["grad-cam>=1.5"]
 fastai = ["fastai>=2.7"]
+lit = ["lightning>=2.5"]
+tracking = ["wandb>=0.19"]
 all = ["colabutilscs4337[tools,cam]"]
 dev = ["pytest>=8", "ruff>=0.6"]
 

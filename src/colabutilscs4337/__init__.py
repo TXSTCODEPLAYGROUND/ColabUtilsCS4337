@@ -20,10 +20,10 @@ except ImportError:  # pragma: no cover - only when running from a source tree w
     __version__ = "0.0.0+unknown"
 
 if TYPE_CHECKING:
-    from . import drive, env, models, tools, viz  # noqa: F401
+    from . import drive, env, lit, models, project, tools, viz  # noqa: F401
     from ._install import install  # noqa: F401
 
-_SUBMODULES = {"env", "drive", "tools", "models", "viz"}
+_SUBMODULES = {"env", "drive", "tools", "models", "viz", "project", "lit"}
 
 __all__ = ["__version__", "install", *sorted(_SUBMODULES)]
 

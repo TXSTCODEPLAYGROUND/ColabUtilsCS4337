@@ -3,17 +3,34 @@
 Each release lists the Google Colab runtime it was tested against
 (from [googlecolab/backend-info](https://github.com/googlecolab/backend-info)).
 
-## 0.1.4 (unreleased)
+## 0.1.6 (2026-11-05)
 
-- `tools.layer_shapes()`: input and output shapes of any layer or block (all positional
-  inputs, keyword tensors, and every output), from one forward pass in eval mode.
-- `viz.show_cam(..., show_color_bar=True)`: a 0-1 importance color bar next to the overlay.
+Tested against: Colab GPU runtime, Python 3.13.15, torch 2.11.0+cu130, torchvision 0.26.0+cu130, fastai 2.8.12.
+
+- `project`: `setup_colab()` (mount Drive, clone or pull a repo, write `.env`, install missing
+  `requirements.txt` packages), `Project` (paths, `.env` settings, configs, run folders,
+  checkpoint lookup and resume), `append_run_summary()`, `compare_runs()`.
+- `lit` (needs `cu.install("lit")`): `start_run()` (CLI, config, resume, run folder, CSV
+  logger, checkpoint callbacks), `connect_wandb()` / `connect_wandb_run()` (online, else
+  offline), `connect_litlogger()`, `ResumableEarlyStopping`.
+- `env.sync_env_file()`: copy an env file from Drive; raises `EnvFileError` when Drive is not
+  mounted or the file is missing. `env.load_secrets(persist_to=...)` also saves secrets to `.env`.
+- `install_requirements()`; new `lit` and `tracking` install extras.
+
+## 0.1.5 (2026-10-19)
+
 - `viz.get_classification_topk()`: softmax probabilities as a DataFrame (`Index`, `label`,
   `probability`), top `k` or every class. `viz.find_categories_like()`: category names
   matching a regular expression, as `(name, index)` pairs.
 - `viz.visualize_gradcam()`: one row per class and one column per layer (one row when
   either side has a single entry), with a 0-1 color bar and titles of layer, category,
   and probability.
+
+## 0.1.4 (2026-10-15)
+
+- `tools.layer_shapes()`: input and output shapes of any layer or block (all positional
+  inputs, keyword tensors, and every output), from one forward pass in eval mode.
+- `viz.show_cam(..., show_color_bar=True)`: a 0-1 importance color bar next to the overlay.
 - `install()` uses Colab's preinstalled `uv` (much faster), falling back to pip.
   `backend="auto" | "uv" | "pip"`. `upgrade=True` never upgrades dependencies.
 

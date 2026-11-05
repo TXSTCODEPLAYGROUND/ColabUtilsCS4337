@@ -15,6 +15,7 @@ reference. This README is a short overview.
 
 - **`env`**: detect Colab, get the notebook name, load secrets (API keys) into the environment, check package versions against the Colab runtime this release was tested on.
 - **`drive`**: mount Google Drive, create run folders like `MyDrive/runs/<notebook>_<YYYYmmdd-HHMMSS>_<slug>/`, keep default paths (`data_dir`, `runs_dir`) across sessions.
+- **`project`** / **`lit`**: set up a course repo in Colab (`setup_colab`, env file from Drive), project paths, configs and run lookup, Lightning run setup, W&B/LitLogger with offline fallback.
 - **`tools`**: `torchinfo` summaries and the Netron graph viewer inside Colab.
 - **`models`**: `load_model()` for fastai exports/checkpoints and PyTorch models/state dicts.
 - **`viz`**: image grids for datasets and batches, Grad-CAM, layer activations, and feature-map plots.

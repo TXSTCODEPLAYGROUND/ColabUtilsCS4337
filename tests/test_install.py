@@ -196,3 +196,37 @@ def test_install_result_str():
     text = str(result)
     assert "Added: netron 9.3.1" in text
     assert "Restart the session" in text
+
+
+def test_requirements_from_file(tmp_path):
+    path = tmp_path / "requirements.txt"
+    path.write_text("# comment\n\nlightning==2.6.6  # pinned\nPillow>=10\n-r other.txt\ntqdm\n")
+    assert _install.requirements_from_file(path) == ["lightning", "pillow", "tqdm"]
+    assert _install.requirements_from_file(path, pin=True) == [
+        "lightning==2.6.6",
+        "Pillow>=10",
+        "tqdm",
+    ]
+
+
+def test_install_requirements_installs_only_missing(monkeypatch, tmp_path, capsys):
+    from importlib import metadata
+
+    path = tmp_path / "requirements.txt"
+    path.write_text("numpy==1.0\ncu-not-installed-pkg==1.0\n")
+    calls = []
+    monkeypatch.setattr(_install, "install", lambda *reqs, **kw: calls.append(reqs))
+    real_version = metadata.version
+    monkeypatch.setattr(
+        metadata,
+        "version",
+        lambda name: (
+            (_ for _ in ()).throw(metadata.PackageNotFoundError(name))
+            if name == "cu-not-installed-pkg"
+            else real_version(name)
+        ),
+    )
+    missing = _install.install_requirements(path)
+    assert missing == ["cu-not-installed-pkg"]
+    assert calls == [("cu-not-installed-pkg",)]
+    assert "skip numpy" in capsys.readouterr().out

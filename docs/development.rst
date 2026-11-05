@@ -38,7 +38,7 @@ Repository layout
 
 .. code-block:: text
 
-   src/colabutilscs4337/   the package (env, drive, tools, models, viz)
+   src/colabutilscs4337/   the package (env, drive, project, lit, tools, models, viz)
    tests/                  pytest suite (Colab is mocked; torch/fastai tests run on CPU)
    docs/                   this documentation (Sphinx)
    constraints/            Colab's published package versions (generated)

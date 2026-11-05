@@ -12,6 +12,13 @@ Secrets
 .. autofunction:: colabutilscs4337.env.read_env_file
 .. autoexception:: colabutilscs4337.env.MissingSecretError
 
+Env file from Drive
+-------------------
+
+.. autofunction:: colabutilscs4337.env.sync_env_file
+.. autofunction:: colabutilscs4337.env.drive_env_path
+.. autoexception:: colabutilscs4337.env.EnvFileError
+
 Runtime
 -------
 

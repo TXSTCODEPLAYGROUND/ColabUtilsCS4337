@@ -61,6 +61,8 @@ autodoc_default_options = {
     "show-inheritance": True,
 }
 autodoc_typehints = "description"
+# cu.lit imports Lightning at module level; the docs build installs neither it nor torch.
+autodoc_mock_imports = ["lightning", "wandb", "torch"]
 autodoc_member_order = "bysource"
 autoclass_content = "class"
 

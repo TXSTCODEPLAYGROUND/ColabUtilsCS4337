@@ -37,6 +37,7 @@ One import gives you short, safe helpers for the chores around every assignment:
 
    guide/secrets
    guide/runs_and_data
+   guide/course_projects
    guide/data_visualization
    guide/model_inspection
    guide/cnn_visualization
@@ -49,6 +50,8 @@ One import gives you short, safe helpers for the chores around every assignment:
    api/install
    api/env
    api/drive
+   api/project
+   api/lit
    api/tools
    api/models
    api/viz

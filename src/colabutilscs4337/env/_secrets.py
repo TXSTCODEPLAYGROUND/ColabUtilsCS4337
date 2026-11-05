@@ -96,12 +96,29 @@ def get_secret(
     return value or default
 
 
+def _append_to_env_file(path: Path, values: dict[str, str]) -> None:
+    """Add ``NAME=value`` lines for the names ``path`` does not define yet."""
+    known = read_env_file(path) if path.is_file() else {}
+    new = {k: v for k, v in values.items() if k not in known}
+    if not new:
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = path.read_text() if path.is_file() else ""
+    with path.open("a") as f:
+        if text and not text.endswith("\n"):
+            f.write("\n")
+        for key, value in new.items():
+            f.write(f"{key}={value}\n")
+    path.chmod(0o600)
+
+
 def load_secrets(
     *names: str,
     env_file: str | os.PathLike | None = None,
     prompt: bool = False,
     required: bool = False,
     overwrite: bool = False,
+    persist_to: str | os.PathLike | None = None,
     verbose: bool = True,
 ) -> dict[str, str | None]:
     """Put secrets into ``os.environ`` so libraries (Hugging Face, W&B, Kaggle) find them.
@@ -110,12 +127,18 @@ def load_secrets(
     ``{name: source}`` where ``source`` is where it was found (``None`` if missing).
     Prints a short found/missing summary, never the values.
 
+    ``persist_to="/content/repo/.env"`` also appends each secret that came from Colab
+    Secrets (or a prompt) to that file, unless it already has the name. A project run
+    from Colab's terminal, which does not share this notebook's ``os.environ``, then
+    finds the keys in its ``.env``.
+
     Examples::
 
         cu.env.load_secrets("HF_TOKEN", "WANDB_API_KEY")
         cu.env.load_secrets("KAGGLE_USERNAME", "KAGGLE_KEY", required=True)
         cu.env.load_secrets(env_file="/content/drive/MyDrive/keys.env")   # load a whole file
         cu.env.load_secrets("OPENAI_API_KEY", prompt=True)                 # ask if missing
+        cu.env.load_secrets("WANDB_API_KEY", persist_to=".env")            # also save to .env
     """
     files = _env_files(env_file)
     cache: dict[Path, dict[str, str]] = {}
@@ -125,6 +148,7 @@ def load_secrets(
         names = tuple(dict.fromkeys(k for path in files for k in cache[path]))
 
     result: dict[str, str | None] = {}
+    to_persist: dict[str, str] = {}
     no_access: list[str] = []
     for name in names:
         if os.environ.get(name) and not overwrite:
@@ -146,7 +170,12 @@ def load_secrets(
             source = "prompt" if value else ""
         if value:
             os.environ[name] = value
+        if value and source in ("Colab Secrets", "prompt"):
+            to_persist[name] = value
         result[name] = source or None
+
+    if persist_to is not None and to_persist:
+        _append_to_env_file(Path(persist_to), to_persist)
 
     if verbose:
         for name, source in result.items():

@@ -28,6 +28,8 @@ _KNOWN = {
     "netron": ("netron", "tools"),
     "pytorch_grad_cam": ("grad-cam", "cam"),
     "fastai": ("fastai", "fastai"),
+    "lightning": ("lightning", "lit"),
+    "wandb": ("wandb", "tracking"),
     "torch": ("torch", None),
     "torchvision": ("torchvision", None),
     "numpy": ("numpy", None),
